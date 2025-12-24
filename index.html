@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کتابخوان آنلاین - PDF Reader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            direction: rtl;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 400px;
+            background: white;
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: row-reverse;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .sidebar-tabs {
+            width: 80px;
+            background: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+
+        .tab-button {
+            width: 100%;
+            padding: 20px 0;
+            border: none;
+            background: transparent;
+            color: #bdc3c7;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            border-right: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ff9800;
+            border-right-color: #ff9800;
+        }
+
+        .tab-button i {
+            font-size: 24px;
+        }
+
+        .tab-button span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Book Cover Tab */
+        .book-cover {
+            text-align: center;
+        }
+
+        .book-cover img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .book-info {
+            text-align: right;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .book-info h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .book-info p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* Table of Contents */
+        .toc-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff9800;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-item {
+            margin: 5px 0;
+        }
+
+        .toc-item-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 10px;
+        }
+
+        .toc-item-header:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .toc-item-header.active {
+            background: #fff3e0;
+            border-right: 3px solid #ff9800;
+        }
+
+        .toc-toggle {
+            width: 20px;
+            text-align: center;
+            color: #666;
+            transition: transform 0.3s;
+        }
+
+        .toc-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .toc-item-title {
+            flex: 1;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .toc-item-page {
+            color: #7f8c8d;
+            font-size: 13px;
+            min-width: 50px;
+            text-align: left;
+        }
+
+        .toc-children {
+            margin-right: 25px;
+            margin-top: 5px;
+            display: none;
+            padding-right: 15px;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .toc-children.expanded {
+            display: block;
+        }
+
+        .toc-item.level-2 .toc-item-header {
+            background: #fafafa;
+            font-size: 13px;
+        }
+
+        .toc-item.level-3 .toc-item-header {
+            background: #fcfcfc;
+            font-size: 12px;
+            padding: 8px 10px;
+        }
+
+        /* Bookmarks Tab */
+        .bookmarks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bookmark-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #fff8e1;
+            border-right: 4px solid #ffc107;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bookmark-item:hover {
+            background: #ffecb3;
+            transform: translateX(-3px);
+        }
+
+        .bookmark-icon {
+            color: #ffc107;
+            font-size: 20px;
+            margin-left: 12px;
+        }
+
+        .bookmark-info {
+            flex: 1;
+        }
+
+        .bookmark-page {
+            font-weight: bold;
+            color: #f57c00;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .bookmark-note {
+            color: #666;
+            font-size: 12px;
+            display:flex;
+            justify-content:space-between;
+        }
+        .bookmark-note i{
+            font-size:15px;
+        }
+
+        .bookmark-delete {
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+            margin-right:auto;
+        }
+
+        .bookmark-delete:hover {
+            color: #f44336;
+        }
+
+        .empty-bookmarks {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-bookmarks i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Search Tab */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input-group input:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+
+        .search-input-group button {
+            padding: 12px 25px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-input-group button:hover {
+            background: #f57c00;
+        }
+
+        .search-results {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .search-result-page {
+            color: #ff9800;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .search-result-text {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* Notes Tab */
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .note-item {
+            padding: 15px;
+            padding-left: 50px;
+            background: #fffbf0;
+            border-right: 4px solid #ff9800;
+            border-radius: 6px;
+            position: relative;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .note-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateX(-2px);
+        }
+
+        .note-item-delete {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f44336;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0;
+        }
+
+        .note-item:hover .note-item-delete {
+            opacity: 1;
+        }
+
+        .note-item-delete:hover {
+            background: #da190b;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .note-page {
+            color: #ff9800;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .note-date {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .note-text {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Citations Tab */
+        .citation-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .citation-text {
+            color: #2c3e50;
+            font-size: 13px;
+            line-height: 1.8;
+            font-family: 'Courier New', monospace;
+        }
+
+        .citation-copy {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* PDF Viewer */
+        .pdf-viewer {
+            flex: 1;
+            background: #525659;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .pdf-toolbar {
+            background: #323639;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            gap: 15px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toolbar-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .toolbar-btn:hover {
+            background: #555;
+        }
+
+        .toolbar-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toolbar-btn i {
+            font-size: 16px;
+        }
+
+        .toolbar-btn.bookmarked {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .toolbar-btn.bookmarked:hover {
+            background: #ffb300;
+        }
+
+        .toolbar-btn.active {
+            background: #ff9800;
+        }
+
+        .page-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .page-input {
+            width: 60px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            background: #444;
+            color: white;
+        }
+
+        .zoom-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .zoom-select {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pdf-canvas-container {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .pdf-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .pdf-page-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .pdf-page-wrapper.double-page {
+            display: flex;
+            gap: 20px;
+        }
+
+        .pdf-page-wrapper.double-page > div {
+            position: relative;
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            display: block;
+        }
+
+        .fullscreen-btn {
+            background: #ff9800;
+        }
+
+        .fullscreen-btn:hover {
+            background: #f57c00;
+        }
+
+        /* Scrollbar Styling - Visible */
+        .sidebar-content::-webkit-scrollbar,
+        .pdf-canvas-container::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .pdf-canvas-container::-webkit-scrollbar-track {
+            background: #3a3d40;
+            border-radius: 6px;
+        }
+
+        .pdf-canvas-container::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 6px;
+        }
+
+        .pdf-canvas-container::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: white;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-left: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                right: -100%;
+                transition: right 0.3s;
+                z-index: 1000;
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+        }
+        .book-img{
+            max-width:100%;
+            width:150px;
+        }
+
+        /* Page Action Buttons */
+        .page-actions {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            display: flex;
+            flex-direction:column;
+            gap: 8px;
+            z-index: 10;
+             background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .page-action-btn {
+            background:transparent;
+            border: none;
+            color: #666;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+         
+        }
+
+        .page-action-btn:hover {
+         
+            color: #ff9800;
+        }
+
+        .page-action-btn i {
+            font-size: 18px;
+        }
+
+        .page-action-btn.bookmarked {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: white;
+        }
+
+        .page-action-btn.has-note {
+            background: #2196F3;
+            border-color: #2196F3;
+            color: white;
+        }
+
+        /* Note Modal */
+        .note-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .note-modal.active {
+            display: flex;
+        }
+
+        .note-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .note-modal-header {
+            padding: 20px;
+            background: #ff9800;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .note-modal-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .note-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .note-modal-body {
+            padding: 20px;
+            max-height: calc(80vh - 140px);
+            overflow-y: auto;
+        }
+
+        .note-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            direction: rtl;
+            transition: border-color 0.2s;
+        }
+
+        .note-textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+
+        .note-modal-footer {
+            padding: 15px 20px;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .note-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .note-btn-save {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .note-btn-save:hover {
+            background: #45a049;
+        }
+
+        .note-btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .note-btn-cancel:hover {
+            background: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <!-- Book Cover Tab -->
+                <div class="tab-pane active" id="coverTab">
+                    <div class="book-cover">
+                        <img src="./images/book-img.JPG" alt="جلد کتاب" class='img-fluid book-img'>
+                        <div class="book-info">
+                            <h4>مشخصات کتاب</h4>
+                            <p><strong>عنوان:</strong> نمونه کتاب علمی</p>
+                            <p><strong>نویسنده:</strong> دکتر محمدرضا محمدی</p>
+                            <p><strong>ناشر:</strong> انتشارات دانشگاهی</p>
+                            <p><strong>سال انتشار:</strong> ۱۴۰۳</p>
+                            <p><strong>تعداد صفحات:</strong> ۵۷۰</p>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                   <!-- Table of Contents Tab -->
+                <div class="tab-pane" id="tocTab">
+                    <div class="toc-header">فهرست مطالب</div>
+                    <ul class="toc-list" id="tocList">
+                      
+                        
+                        <li class="toc-item level-1">
+                            <div class="toc-item-header" data-page="1">
+                                <span class="toc-item-title">صفحه عنوان</span>
+                                <span class="toc-item-page">(ص ۱)</span>
+                            </div>
+                        </li>
+
+                        <li class="toc-item level-1">
+                            <div class="toc-item-header" data-has-children="true" data-page="20">
+                                <span class="toc-toggle">◄</span>
+                                <span class="toc-item-title">فصل اول: مبانی نظری</span>
+                                <span class="toc-item-page">(ص ۲۰)</span>
+                            </div>
+                            <ul class="toc-children">
+                                <li class="toc-item level-2">
+                                    <div class="toc-item-header" data-has-children="true" data-page="26">
+                                        <span class="toc-toggle">◄</span>
+                                         <span class="toc-item-title">چارچوب نظری</span>
+                                        <span class="toc-item-page">(ص ۲۶)</span>
+                                    </div>
+                                    <ul class="toc-children">
+                                        <li class="toc-item level-3">
+                                            <div class="toc-item-header" data-page="26">
+                                                <span class="toc-item-title">نظریه‌های مرتبط</span>
+                                                <span class="toc-item-page">(ص ۲۶)</span>
+                                            </div>
+                                        </li>
+                                         <li class="toc-item level-3">
+                                           <div class="toc-item-header" data-page="32">
+                                                <span class="toc-item-title">مدل مفهومی</span>
+                                                <span class="toc-item-page">(ص ۳۲)</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                                 <li class="toc-item level-2">
+                                    <div class="toc-item-header" data-has-children="true" data-page="40">
+                                        <span class="toc-toggle">◄</span>
+                                        <span class="toc-item-title">پیشینه پژوهش</span>
+                                        <span class="toc-item-page">(ص ۴۰)</span>
+                                    </div>
+                                    <ul class="toc-children">
+                                        <li class="toc-item level-3">
+                                            <div class="toc-item-header" data-page="42">
+                                                <span class="toc-item-title">مطالعات داخلی</span>
+                                                <span class="toc-item-page">(ص ۴۲)</span>
+                                            </div>
+                                        </li>
+                                        <li class="toc-item level-3">
+                                            <div class="toc-item-header" data-page="48">
+                                                <span class="toc-item-title">مطالعات خارجی</span>
+                                                <span class="toc-item-page">(ص ۴۸)</span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <li class="toc-item level-1">
+                            <div class="toc-item-header" data-has-children="true" data-page="60">
+                                <span class="toc-toggle">◄</span>
+                                <span class="toc-item-title">فصل دوم: روش‌شناسی</span>
+                                <span class="toc-item-page">(ص ۶۰)</span>
+                            </div>
+                            <ul class="toc-children">
+                                <li class="toc-item level-2">
+                                    <div class="toc-item-header" data-page="62">
+                                        <span class="toc-item-title">روش تحقیق</span>
+                                        <span class="toc-item-page">(ص ۶۲)</span>
+                                    </div>
+                                </li>
+                                <li class="toc-item level-2">
+                                    <div class="toc-item-header" data-page="70">
+                                        <span class="toc-item-title">جامعه و نمونه آماری</span>
+                                        <span class="toc-item-page">(ص ۷۰)</span>
+                                    </div>
+                                </li>
+                                <li class="toc-item level-2">
+                                    <div class="toc-item-header" data-page="78">
+                                        <span class="toc-item-title">ابزار گردآوری داده‌ها</span>
+                                        <span class="toc-item-page">(ص ۷۸)</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="toc-item level-1">
+                            <div class="toc-item-header" data-page="90">
+                                <span class="toc-item-title">فصل سوم: یافته‌ها</span>
+                                <span class="toc-item-page">(ص ۹۰)</span>
+                            </div>
+                        </li>
+
+                      
+
+                       
+                       
+                    </ul>
+                </div>
+
+                <!-- Bookmarks Tab -->
+                <div class="tab-pane" id="bookmarksTab">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">صفحات نشانه‌گذاری شده</h4>
+                    <div class="bookmarks-container" id="bookmarksContainer">
+                        
+                        <div class="bookmark-item" onclick="goToPage(15)">
+                            <i class="fas fa-bookmark bookmark-icon"></i>
+                            <div class="bookmark-info">
+                                <div class="bookmark-page">صفحه ۱۵</div>
+                                <div class="bookmark-note">
+                                    <span class='note-name'>
+                                         مقدمه کتاب - نکات مهم در مورد روش‌شناسی
+                                    </span>
+                                     <button class="bookmark-delete"  title="حذف نشانه">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                                   </div>
+                                <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۵</div>
+                               
+                            </div>
+                        </div>
+
+                        <div class="bookmark-item" onclick="goToPage(42)">
+                            <i class="fas fa-bookmark bookmark-icon"></i>
+                            <div class="bookmark-info">
+                                <div class="bookmark-page">صفحه ۴۲</div>
+                                <div class="bookmark-note">
+                                    <span>
+                                        فصل سوم - تحلیل داده‌های کمی
+                                    </span>
+                                
+                                 <button class="bookmark-delete"  title="حذف نشانه">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                                </div>
+                                <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۶</div>
+                            </div>
+                        </div>
+
+                        <div class="bookmark-item" onclick="goToPage(78)">
+                            <i class="fas fa-bookmark bookmark-icon"></i>
+                            <div class="bookmark-info">
+                                <div class="bookmark-page">صفحه ۷۸</div>
+                                <div class="bookmark-note">
+                                    <button class="bookmark-delete"  title="حذف نشانه">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                                </div>
+                                <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۸</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Search Tab -->
+                <div class="tab-pane" id="searchTab">
+                    <div class="search-container">
+                        <h4 style="margin-bottom: 15px; color: #2c3e50;">جستجو در کتاب</h4>
+                        
+                        <form method="GET" action="" id="searchForm">
+                            <div class="search-input-group">
+                                <input type="text" 
+                                       id="searchInput" 
+                                       name="search_query"
+                                       placeholder="عبارت مورد نظر را وارد کنید...">
+                                <button type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="search-results" id="searchResults">
+                            
+                            <div class="search-result-item" onclick="goToPage(23)">
+                                <div class="search-result-page">صفحه ۲۳</div>
+                                <div class="search-result-text">
+                                    ... در بحث <span class="highlight">تحقیق</span> می‌توان گفت که روش‌شناسی علمی ...
+                                </div>
+                            </div>
+
+                            <div class="search-result-item" onclick="goToPage(45)">
+                                <div class="search-result-page">صفحه ۴۵</div>
+                                <div class="search-result-text">
+                                    ... مفهوم <span class="highlight">تحقیق</span> در این متن به معنای جستجوی علمی ...
+                                </div>
+                            </div>
+
+                            <div class="search-result-item" onclick="goToPage(78)">
+                                <div class="search-result-page">صفحه ۷۸</div>
+                                <div class="search-result-text">
+                                    ... بررسی <span class="highlight">تحقیق</span> نشان می‌دهد که روش کیفی ...
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Notes Tab -->
+                <div class="tab-pane" id="notesTab">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">یادداشت ها </h4>
+                    <div class="notes-container" id="notesContainer">
+                        
+                        <div class="note-item" onclick="goToPage(23)">
+                            <button class="note-item-delete" onclick="event.stopPropagation(); deleteNoteItem(23);" title="حذف یادداشت">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <div class="note-header">
+                                <span class="note-page">صفحه ۲۳</span>
+                                <span class="note-date">۱۴۰۳/۰۹/۱۵</span>
+                            </div>
+                            <div class="note-text">
+                                این بخش در مورد خودشناسی بحث می‌کند و مباحث مهمی در زمینه شناخت انسان از خود دارد.
+                            </div>
+                        </div>
+
+                        <div class="note-item" onclick="goToPage(27)">
+                            <button class="note-item-delete" onclick="event.stopPropagation(); deleteNoteItem(27);" title="حذف یادداشت">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <div class="note-header">
+                                <span class="note-page">صفحه ۲۷</span>
+                                <span class="note-date">۱۴۰۳/۰۹/۱۶</span>
+                            </div>
+                            <div class="note-text">
+                                مفاهیم حقیقت انسان و روح در این قسمت به طور جامع بررسی شده است.
+                            </div>
+                        </div>
+
+                        <div class="note-item" onclick="goToPage(42)">
+                            <button class="note-item-delete" onclick="event.stopPropagation(); deleteNoteItem(42);" title="حذف یادداشت">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <div class="note-header">
+                                <span class="note-page">صفحه ۴۲</span>
+                                <span class="note-date">۱۴۰۳/۰۹/۲۰</span>
+                            </div>
+                            <div class="note-text">
+                                نکته مهم: تحلیل داده‌ها در این فصل با رویکرد کیفی انجام شده و نتایج قابل توجهی ارائه می‌دهد.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Citations Tab -->
+                <div class="tab-pane" id="citationsTab">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">استنادات</h4>
+                    <div class="citation-item">
+                        <p style="font-weight: bold; margin-bottom: 10px; color: #2c3e50;">روش APA:</p>
+                        <div class="citation-text">
+                            محمدی، م. (۱۴۰۳). نمونه کتاب علمی. تهران: انتشارات دانشگاهی.
+                        </div>
+                        <button class="citation-copy" onclick="copyCitation(this)">
+                            <i class="fas fa-clipboard"></i> کپی
+                        </button>
+                    </div>
+                    <div class="citation-item">
+                        <p style="font-weight: bold; margin-bottom: 10px; color: #2c3e50;">روش شیکاگو:</p>
+                        <div class="citation-text">
+                            محمدی، محمدرضا. نمونه کتاب علمی. تهران: انتشارات دانشگاهی، ۱۴۰۳.
+                        </div>
+                        <button class="citation-copy" onclick="copyCitation(this)">
+                            <i class="fas fa-clipboard"></i> کپی
+                        </button>
+                    </div>
+                    <div class="citation-item">
+                        <p style="font-weight: bold; margin-bottom: 10px; color: #2c3e50;">روش MLA:</p>
+                        <div class="citation-text">
+                            محمدی، محمدرضا. نمونه کتاب علمی. انتشارات دانشگاهی، ۱۴۰۳.
+                        </div>
+                        <button class="citation-copy" onclick="copyCitation(this)">
+                            <i class="fas fa-clipboard"></i> کپی
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-tabs">
+                <button class="tab-button active" onclick="switchTab('coverTab', this)">
+                    <i class="fas fa-book"></i>
+                    <span>شناسنامه<br>کتاب</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('tocTab', this)">
+                    <i class="fas fa-list"></i>
+                    <span>فهرست</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('bookmarksTab', this)">
+                    <i class="fas fa-bookmark"></i>
+                    <span>نشانه‌ها</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('searchTab', this)">
+                    <i class="fas fa-search"></i>
+                    <span>جستجو در<br>کتاب</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('notesTab', this)">
+                    <i class="fas fa-pen"></i>
+                    <span>یادداشت ها</span>
+                </button>
+              
+            </div>
+        </div>
+
+        <!-- PDF Viewer -->
+        <div class="pdf-viewer">
+            <div class="pdf-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" id="prevPage" title="صفحه قبل">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="toolbar-btn" id="nextPage" title="صفحه بعد">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="page-info">
+                        <span>صفحه</span>
+                        <input type="number" id="pageInput" class="page-input" value="1" min="1">
+                        <span>از</span>
+                        <span id="totalPages">-</span>
+                    </div>
+                </div>
+
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" id="bookmarkBtn" title="نشانه‌گذاری صفحه" style="display: none;">
+                        <i class="fas fa-bookmark"></i>
+                        <span style="margin-right: 5px;">نشانه</span>
+                    </button>
+                    <div class="zoom-control">
+                        <button class="toolbar-btn" id="zoomOut" title="کوچک‌نمایی">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <select id="zoomSelect" class="zoom-select">
+                            <option value="0.5">50%</option>
+                            <option value="0.75">75%</option>
+                            <option value="1"  selected>100%</option>
+                            <option value="1.25">125%</option>
+                            <option value="1.5" >150%</option>
+                            <option value="2">200%</option>
+                            <option value="auto">تناسب صفحه</option>
+                        </select>
+                        <button class="toolbar-btn" id="zoomIn" title="بزرگ‌نمایی">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="toolbar-group">
+                    <button class="toolbar-btn active" id="singlePageBtn" title="تک صفحه ">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+                    <button class="toolbar-btn" id="doublePageBtn" title="دو صفحه">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="toolbar-btn fullscreen-btn" id="fullscreenBtn" title="تمام صفحه">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pdf-canvas-container" id="pdfContainer">
+                <div class="loading-spinner">
+                    <span>در حال بارگذاری PDF...</span>
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="note-modal" id="noteModal">
+        <div class="note-modal-content">
+            <div class="note-modal-header">
+                <h3>
+                    <i class="fas fa-sticky-note"></i>
+                    یادداشت صفحه <span id="noteModalPageNumber">-</span>
+                </h3>
+                <button class="note-modal-close" onclick="closeNoteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="note-modal-body">
+                <textarea 
+                    class="note-textarea" 
+                    id="noteTextarea"
+                    placeholder="یادداشت خود را اینجا بنویسید..."
+                ></textarea>
+            </div>
+            <div class="note-modal-footer">
+                <button class="note-btn note-btn-cancel" onclick="closeNoteModal()">
+                    انصراف
+                </button>
+                <button class="note-btn note-btn-save" onclick="saveNote()">
+                    <i class="fas fa-save"></i> ذخیره
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Action Buttons Template -->
+    <template id="pageActionsTemplate">
+        <div class="page-actions">
+            <button class="page-action-btn bookmark-btn" title="نشانه گذاری" style=" opacity: 0.5;">
+                <i class="fas fa-bookmark"></i>
+            </button>
+            <button class="page-action-btn note-btn" title="افزودن یادداشت">
+                <i class="fas fa-sticky-note"></i>
+            </button>
+        </div>
+    </template>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // PDF.js Configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 0;
+        let zoom = 1;
+        let isDoublePageMode = false;
+        let bookmarks = [];
+        let renderedPages = new Set();
+        let pageElements = new Map();
+        let pageNotes = {};
+        let currentNotePageNumber = null;
+        let currentPdfId = 1;
+
+        // Note Modal Functions
+        function openNoteModal(pageNumber) {
+            currentNotePageNumber = pageNumber;
+            document.getElementById('noteModalPageNumber').textContent = pageNumber;
+            document.getElementById('noteTextarea').value = pageNotes[pageNumber] || '';
+            document.getElementById('noteModal').classList.add('active');
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.remove('active');
+            currentNotePageNumber = null;
+        }
+
+        function saveNote() {
+            const noteText = document.getElementById('noteTextarea').value.trim();
+            
+            if (noteText) {
+                pageNotes[currentNotePageNumber] = noteText;
+                updateNoteIcon(currentNotePageNumber);
+             
+            }
+            
+            closeNoteModal();
+        }
+
+      
+
+      
+
+        function updateNoteIcon(pageNumber) {
+            const noteBtn = document.querySelector(`.page-action-btn[data-page="${pageNumber}"][data-action="note"]`);
+            if (noteBtn) {
+                if (pageNotes[pageNumber]) {
+                    noteBtn.classList.add('has-note');
+                } else {
+                    noteBtn.classList.remove('has-note');
+                }
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('noteModal');
+            if (e.target === modal) {
+                closeNoteModal();
+            }
+        });
+
+   
+
+
+  
+
+        // Tab Switching
+        function switchTab(tabId, button) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            button.classList.add('active');
+        }
+
+        // TOC functionality using event delegation on parent
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocList = document.getElementById('tocList');
+            if (tocList) {
+                tocList.addEventListener('click', function(e) {
+                    const header = e.target.closest('.toc-item-header');
+                    if (!header) return;
+                    
+                    const hasChildren = header.getAttribute('data-has-children') === 'true';
+                    
+                    if (hasChildren) {
+                        // Toggle children
+                        const parent = header.parentElement;
+                        const children = parent.querySelector('.toc-children');
+                        const toggle = header.querySelector('.toc-toggle');
+                        
+                        if (children && toggle) {
+                            children.classList.toggle('expanded');
+                            toggle.classList.toggle('expanded');
+                        }
+                    } else {
+                        // Go to page
+                        const page = parseInt(header.getAttribute('data-page'));
+                        if (page) {
+                            goToPage(page);
+                        }
+                    }
+                });
+            }
+        });
+
+        function goToPage(pageNum) {
+            currentPage = pageNum;
+            document.getElementById('pageInput').value = pageNum;
+            
+            if (isDoublePageMode) {
+                renderPage();
+            } else {
+                // Scroll to page in continuous mode
+                const pageElement = pageElements.get(pageNum);
+                if (pageElement) {
+                    pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            
+            updateBookmarkButton();
+        }
+
+        // Copy Citation
+        function copyCitation(button) {
+            const citationText = button.previousElementSibling.textContent;
+            navigator.clipboard.writeText(citationText).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> کپی شد!';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // Load PDF
+        async function loadPDF(url) {
+            try {
+                const container = document.getElementById('pdfContainer');
+                container.innerHTML = `
+                    <div class="loading-spinner">
+                        <span>در حال بارگذاری PDF...</span>
+                        <div class="spinner"></div>
+                    </div>
+                `;
+
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                totalPages = pdfDoc.numPages;
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('pageInput').max = totalPages;
+                renderPage();
+                
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                document.getElementById('pdfContainer').innerHTML = `
+                    <div style="color: white; text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <p>خطا در بارگذاری PDF</p>
+                        <p style="font-size: 14px; color: #ccc;">لطفاً مسیر فایل PDF را بررسی کنید</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render Page
+        async function renderPage() {
+            if (!pdfDoc) return;
+
+            const container = document.getElementById('pdfContainer');
+            container.innerHTML = '';
+            pageElements.clear();
+            renderedPages.clear();
+
+            const pagesDiv = document.createElement('div');
+            pagesDiv.className = 'pdf-pages';
+            container.appendChild(pagesDiv);
+
+            if (isDoublePageMode) {
+                // Double page mode - show only current two pages
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pdf-page-wrapper double-page';
+                
+                // Create first page with action buttons
+                const page1Wrapper = document.createElement('div');
+                page1Wrapper.style.position = 'relative';
+                
+                const template = document.getElementById('pageActionsTemplate');
+                const actions1 = template.content.cloneNode(true);
+                const noteBtn1 = actions1.querySelector('.note-btn');
+                noteBtn1.setAttribute('data-page', currentPage);
+                noteBtn1.onclick = function(e) {
+                    e.stopPropagation();
+                    openNoteModal(currentPage);
+                };
+                if (pageNotes[currentPage]) {
+                    noteBtn1.classList.add('has-note');
+                }
+                
+                page1Wrapper.appendChild(actions1);
+                await renderSinglePage(currentPage, page1Wrapper);
+                wrapper.appendChild(page1Wrapper);
+                
+                // Create second page with action buttons
+                if (currentPage < totalPages) {
+                    const page2Wrapper = document.createElement('div');
+                    page2Wrapper.style.position = 'relative';
+                    
+                    const actions2 = template.content.cloneNode(true);
+                    const noteBtn2 = actions2.querySelector('.note-btn');
+                    noteBtn2.setAttribute('data-page', currentPage + 1);
+                    noteBtn2.onclick = function(e) {
+                        e.stopPropagation();
+                        openNoteModal(currentPage + 1);
+                    };
+                    if (pageNotes[currentPage + 1]) {
+                        noteBtn2.classList.add('has-note');
+                    }
+                    
+                    page2Wrapper.appendChild(actions2);
+                    await renderSinglePage(currentPage + 1, page2Wrapper);
+                    wrapper.appendChild(page2Wrapper);
+                }
+                
+                pagesDiv.appendChild(wrapper);
+            } else {
+                // Single page mode - render progressively
+                // Render current page first for quick display
+                await renderPageWrapper(currentPage, pagesDiv);
+                
+                // Setup scroll listener
+                setupScrollListener();
+                
+                // Then render all pages from beginning
+                renderAllPagesProgressive(pagesDiv);
+            }
+        }
+
+        async function renderAllPagesProgressive(container) {
+            // Add loading indicator
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.style.cssText = 'text-align: center; padding: 30px; color: #999; font-size: 14px;';
+            loadingIndicator.innerHTML = `
+                <i class="fas fa-hourglass-half" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                در حال بارگذاری صفحات...
+            `;
+            container.appendChild(loadingIndicator);
+            
+            const batchSize = 3;
+            let renderedCount = 1; // Already rendered current page
+            
+            // Render pages before current page
+            if (currentPage > 1) {
+                for (let i = 1; i < currentPage; i += batchSize) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                    
+                    const endPage = Math.min(i + batchSize - 1, currentPage - 1);
+                    for (let pageNum = i; pageNum <= endPage; pageNum++) {
+                        if (!pageElements.has(pageNum)) {
+                            const wrapper = await createPageWrapper(pageNum);
+                            // Insert before current page
+                            const currentWrapper = pageElements.get(currentPage);
+                            container.insertBefore(wrapper, currentWrapper);
+                            renderedCount++;
+                        }
+                    }
+                    
+                    const progress = Math.round((renderedCount / totalPages) * 100);
+                    loadingIndicator.innerHTML = `
+                        <i class="fas fa-hourglass-half" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        در حال بارگذاری صفحات... (${progress}%)
+                    `;
+                }
+            }
+            
+            // Render pages after current page
+            for (let i = currentPage + 1; i <= totalPages; i += batchSize) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+                
+                const endPage = Math.min(i + batchSize - 1, totalPages);
+                for (let pageNum = i; pageNum <= endPage; pageNum++) {
+                    if (!pageElements.has(pageNum)) {
+                        const wrapper = await createPageWrapper(pageNum);
+                        container.insertBefore(wrapper, loadingIndicator);
+                        renderedCount++;
+                    }
+                }
+                
+                const progress = Math.round((renderedCount / totalPages) * 100);
+                loadingIndicator.innerHTML = `
+                    <i class="fas fa-hourglass-half" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                    در حال بارگذاری صفحات... (${progress}%)
+                `;
+            }
+            
+            loadingIndicator.remove();
+        }
+
+        async function createPageWrapper(pageNum) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'pdf-page-wrapper';
+            wrapper.setAttribute('data-page', pageNum);
+            
+            // Clone action buttons from template
+            const template = document.getElementById('pageActionsTemplate');
+            const actionsDiv = template.content.cloneNode(true);
+            
+            // Get the note button and add click handler
+            const noteBtn = actionsDiv.querySelector('.note-btn');
+            noteBtn.setAttribute('data-page', pageNum);
+            noteBtn.onclick = function(e) {
+                e.stopPropagation();
+                openNoteModal(pageNum);
+            };
+            
+            // Check if page has note
+            if (pageNotes[pageNum]) {
+                noteBtn.classList.add('has-note');
+            }
+            
+            wrapper.appendChild(actionsDiv);
+            
+            await renderSinglePage(pageNum, wrapper);
+            pageElements.set(pageNum, wrapper);
+            return wrapper;
+        }
+
+        async function renderPageWrapper(pageNum, container) {
+            const wrapper = await createPageWrapper(pageNum);
+            container.appendChild(wrapper);
+        }
+
+        async function renderSinglePage(pageNum, container) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: zoom });
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            await page.render(renderContext).promise;
+            container.appendChild(canvas);
+            renderedPages.add(pageNum);
+        }
+
+        // Setup scroll listener to update current page
+        function setupScrollListener() {
+            const container = document.getElementById('pdfContainer');
+            let scrollTimeout;
+
+            container.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    updateCurrentPageFromScroll();
+                }, 100);
+            });
+        }
+
+        function updateCurrentPageFromScroll() {
+            const container = document.getElementById('pdfContainer');
+            const scrollTop = container.scrollTop;
+            const containerHeight = container.clientHeight;
+            const centerY = scrollTop + containerHeight / 2;
+
+            let closestPage = 1;
+            let closestDistance = Infinity;
+
+            pageElements.forEach((element, pageNum) => {
+                const rect = element.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const elementTop = rect.top - containerRect.top + scrollTop;
+                const elementCenter = elementTop + rect.height / 2;
+                const distance = Math.abs(elementCenter - centerY);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestPage = pageNum;
+                }
+            });
+
+            if (closestPage !== currentPage) {
+                currentPage = closestPage;
+                document.getElementById('pageInput').value = currentPage;
+                updateBookmarkButton();
+            }
+        }
+
+        // Navigation
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                const newPage = isDoublePageMode ? Math.max(1, currentPage - 2) : currentPage - 1;
+                goToPage(newPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                const newPage = isDoublePageMode ? Math.min(totalPages, currentPage + 2) : currentPage + 1;
+                goToPage(newPage);
+            }
+        });
+
+        document.getElementById('pageInput').addEventListener('change', (e) => {
+            let page = parseInt(e.target.value);
+            if (page >= 1 && page <= totalPages) {
+                goToPage(page);
+            } else {
+                e.target.value = currentPage;
+            }
+        });
+
+     
+
+        // Zoom Controls
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            if (zoom < 3) {
+                zoom += 0.25;
+                document.getElementById('zoomSelect').value = zoom;
+                renderPage();
+            }
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            if (zoom > 0.5) {
+                zoom -= 0.25;
+                document.getElementById('zoomSelect').value = zoom;
+                renderPage();
+            }
+        });
+
+        document.getElementById('zoomSelect').addEventListener('change', (e) => {
+            const value = e.target.value;
+            if (value === 'auto') {
+                zoom = 1.5;
+            } else {
+                zoom = parseFloat(value);
+            }
+            renderPage();
+        });
+
+        // Page Mode Toggle
+        document.getElementById('singlePageBtn').addEventListener('click', () => {
+            if (!isDoublePageMode) return;
+            
+            isDoublePageMode = false;
+            document.getElementById('singlePageBtn').classList.add('active');
+            document.getElementById('doublePageBtn').classList.remove('active');
+            renderPage();
+        });
+
+        document.getElementById('doublePageBtn').addEventListener('click', () => {
+            if (isDoublePageMode) return;
+            
+            isDoublePageMode = true;
+            document.getElementById('doublePageBtn').classList.add('active');
+            document.getElementById('singlePageBtn').classList.remove('active');
+            renderPage();
+        });
+
+        // Fullscreen
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            const viewer = document.querySelector('.pdf-viewer');
+            if (!document.fullscreenElement) {
+                viewer.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+
+        // Load PDF
+        loadPDF('./pdfs/my-pdf.pdf');
+    </script>
+</body>
+</html>
