@@ -1136,26 +1136,7 @@
 
                         <div class="search-results" id="searchResults">
                             
-                            <div class="search-result-item" onclick="goToPage(23)">
-                                <div class="search-result-page">صفحه ۲۳</div>
-                                <div class="search-result-text">
-                                    ... در بحث <span class="highlight">تحقیق</span> می‌توان گفت که روش‌شناسی علمی ...
-                                </div>
-                            </div>
-
-                            <div class="search-result-item" onclick="goToPage(45)">
-                                <div class="search-result-page">صفحه ۴۵</div>
-                                <div class="search-result-text">
-                                    ... مفهوم <span class="highlight">تحقیق</span> در این متن به معنای جستجوی علمی ...
-                                </div>
-                            </div>
-
-                            <div class="search-result-item" onclick="goToPage(78)">
-                                <div class="search-result-page">صفحه ۷۸</div>
-                                <div class="search-result-text">
-                                    ... بررسی <span class="highlight">تحقیق</span> نشان می‌دهد که روش کیفی ...
-                                </div>
-                            </div>
+                              <div class="empty-bookmarks" style="padding: 20px;">عبارت مورد نظر را وارد کنید.</div>
 
                         </div>
                     </div>
@@ -1391,6 +1372,111 @@
         let pageNotes = {};
         let currentNotePageNumber = null;
         let currentPdfId = 1;
+          const pageTextCache = new Map();
+
+        // Utilities
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\$&');
+        }
+
+        async function getPageText(pageNum) {
+            if (pageTextCache.has(pageNum)) {
+                return pageTextCache.get(pageNum);
+            }
+
+            const page = await pdfDoc.getPage(pageNum);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+
+            pageTextCache.set(pageNum, pageText);
+            return pageText;
+        }
+
+        function renderSearchMessage(message) {
+            const container = document.getElementById('searchResults');
+            container.innerHTML = `
+                <div class="empty-bookmarks" style="padding: 20px;">${message}</div>
+            `;
+        }
+
+        function createSearchResultElement(pageNum, snippet) {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.innerHTML = `
+                <div class="search-result-page">صفحه ${pageNum}</div>
+                <div class="search-result-text">${snippet}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                goToPage(pageNum);
+            });
+
+            return item;
+        }
+
+        async function performSearch(query) {
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (!pdfDoc) {
+                renderSearchMessage('ابتدا فایل PDF بارگذاری شود.');
+                return;
+            }
+
+            const sanitizedQuery = query.trim();
+            if (!sanitizedQuery) {
+                renderSearchMessage('عبارت مورد نظر را وارد کنید.');
+                return;
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="loading-spinner" style="padding: 20px;">
+                    <span style="color: #555;">در حال جستجو...</span>
+                    <div class="spinner" style="margin-top: 10px;"></div>
+                </div>
+            `;
+
+            const results = [];
+            const queryLower = sanitizedQuery.toLowerCase();
+            const highlightRegex = new RegExp(`(${escapeRegExp(sanitizedQuery)})`, 'gi');
+
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                const text = await getPageText(pageNum);
+                const lowerText = text.toLowerCase();
+
+                if (!lowerText.includes(queryLower)) continue;
+
+                const index = lowerText.indexOf(queryLower);
+                const context = 80;
+                const start = Math.max(0, index - context);
+                const end = Math.min(text.length, index + sanitizedQuery.length + context);
+
+                let snippet = text.substring(start, end);
+                snippet = (start > 0 ? '...' : '') + snippet + (end < text.length ? '...' : '');
+                snippet = snippet.replace(highlightRegex, '<span class="highlight">$1</span>');
+
+                results.push({ pageNum, snippet });
+            }
+
+            resultsContainer.innerHTML = '';
+
+            if (!results.length) {
+                renderSearchMessage('هیچ نتیجه‌ای یافت نشد.');
+                return;
+            }
+
+            results.forEach(result => {
+                resultsContainer.appendChild(createSearchResultElement(result.pageNum, result.snippet));
+            });
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const searchInput = document.getElementById('searchInput');
+                await performSearch(searchInput.value || '');
+            });
+        }
 
         // Sidebar Toggle for Mobile
 document.getElementById('sidebarToggle').addEventListener('click', () => {
@@ -1887,7 +1973,7 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
 
 
         // Load PDF
-        loadPDF('./pdfs/my-pdf.pdf');
+        loadPDF('./pdfs/my-pdf-2.pdf');
     </script>
 </body>
 </html>
