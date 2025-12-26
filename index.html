@@ -874,10 +874,68 @@
         .note-btn-cancel:hover {
             background: #da190b;
         }
+        /* دکمه Toggle Sidebar - فقط در موبایل */
+.sidebar-toggle-btn {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .pdf-toolbar {
+   
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    z-index: 10000;
+    flex-wrap: wrap;
+}
+    .sidebar-toggle-btn {
+        display: flex;
+        background: #ff9800;
+    }
+    
+    .sidebar-toggle-btn:hover {
+        background: #f57c00;
+    }
+}
+
+/* Responsive - تغییر به 991px */
+@media (max-width: 991px) {
+    .sidebar {
+        width: 320px;
+        position: fixed;
+        right: -320px;
+        height: 100vh;
+        transition: right 0.3s ease;
+        z-index: 10001;
+    }
+
+    .sidebar.show {
+        right: 0;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    }
+    
+    /* Overlay برای بستن sidebar */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
     </style>
 </head>
 <body>
     <div class="main-container">
+         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-content">
@@ -1211,6 +1269,9 @@
         <!-- PDF Viewer -->
         <div class="pdf-viewer">
             <div class="pdf-toolbar">
+                <button class="toolbar-btn sidebar-toggle-btn" id="sidebarToggle" title="باز/بسته کردن منو">
+        <i class="fas fa-bars"></i>
+    </button>
                 <div class="toolbar-group">
                     <button class="toolbar-btn" id="prevPage" title="صفحه قبل">
                         <i class="fas fa-chevron-right"></i>
@@ -1331,6 +1392,37 @@
         let currentNotePageNumber = null;
         let currentPdfId = 1;
 
+        // Sidebar Toggle for Mobile
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+});
+
+// بستن sidebar با کلیک روی overlay
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+});
+
+// بستن sidebar با کلیک روی آیتم‌های منو
+// document.querySelectorAll('.toc-item-header, .bookmark-item, .search-result-item, .note-item').forEach(item => {
+//     item.addEventListener('click', () => {
+//         if (window.innerWidth <= 991) {
+//             const sidebar = document.querySelector('.sidebar');
+//             const overlay = document.getElementById('sidebarOverlay');
+            
+//             sidebar.classList.remove('show');
+//             overlay.classList.remove('show');
+//         }
+//     });
+// });
+
         // Note Modal Functions
         function openNoteModal(pageNumber) {
             currentNotePageNumber = pageNumber;
@@ -1438,7 +1530,7 @@
                 }
             }
             
-            updateBookmarkButton();
+    
         }
 
         // Copy Citation
@@ -1707,7 +1799,7 @@
             if (closestPage !== currentPage) {
                 currentPage = closestPage;
                 document.getElementById('pageInput').value = currentPage;
-                updateBookmarkButton();
+               
             }
         }
 
