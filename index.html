@@ -7,23 +7,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --app-height: 100vh;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh;
-            overflow: hidden;
             background: #f5f5f5;
         }
 
         .main-container {
             display: flex;
-            height: 100vh;
+            height: var(--app-height);
             direction: rtl;
+            overflow: hidden;
         }
 
         /* Sidebar Styles */
@@ -35,6 +44,7 @@
             flex-direction: row-reverse;
             box-shadow: -2px 0 10px rgba(0,0,0,0.1);
             z-index: 100;
+            height: 100%;
         }
 
         .sidebar-tabs {
@@ -261,11 +271,12 @@
         .bookmark-note {
             color: #666;
             font-size: 12px;
-            display:flex;
-            justify-content:space-between;
+            display: flex;
+            justify-content: space-between;
         }
-        .bookmark-note i{
-            font-size:15px;
+
+        .bookmark-note i {
+            font-size: 15px;
         }
 
         .bookmark-delete {
@@ -275,7 +286,7 @@
             cursor: pointer;
             padding: 5px;
             transition: color 0.2s;
-            margin-right:auto;
+            margin-right: auto;
         }
 
         .bookmark-delete:hover {
@@ -478,6 +489,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            height: 100%;
         }
 
         .pdf-toolbar {
@@ -488,6 +500,8 @@
             justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             gap: 15px;
+            position: relative;
+            z-index: 100;
         }
 
         .toolbar-group {
@@ -580,6 +594,8 @@
             flex-direction: column;
             gap: 20px;
             align-items: center;
+            min-width: min-content;
+            width: fit-content
         }
 
         .pdf-page-wrapper {
@@ -612,7 +628,7 @@
             background: #f57c00;
         }
 
-        /* Scrollbar Styling - Visible */
+        /* Scrollbar Styling */
         .sidebar-content::-webkit-scrollbar,
         .pdf-canvas-container::-webkit-scrollbar {
             width: 12px;
@@ -671,23 +687,9 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                position: absolute;
-                right: -100%;
-                transition: right 0.3s;
-                z-index: 1000;
-            }
-
-            .sidebar.show {
-                right: 0;
-            }
-        }
-        .book-img{
-            max-width:100%;
-            width:150px;
+        .book-img {
+            max-width: 100%;
+            width: 150px;
         }
 
         /* Page Action Buttons */
@@ -696,15 +698,15 @@
             top: 0px;
             left: 0px;
             display: flex;
-            flex-direction:column;
+            flex-direction: column;
             gap: 8px;
             z-index: 10;
-             background: rgba(255, 255, 255, 0.9);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .page-action-btn {
-            background:transparent;
+            background: transparent;
             border: none;
             color: #666;
             width: 40px;
@@ -715,11 +717,9 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-         
         }
 
         .page-action-btn:hover {
-         
             color: #ff9800;
         }
 
@@ -874,68 +874,132 @@
         .note-btn-cancel:hover {
             background: #da190b;
         }
-        /* دکمه Toggle Sidebar - فقط در موبایل */
-.sidebar-toggle-btn {
-    display: none;
-}
 
-@media (max-width: 991px) {
-    .pdf-toolbar {
-   
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    z-index: 10000;
-    flex-wrap: wrap;
-}
-    .sidebar-toggle-btn {
-        display: flex;
-        background: #ff9800;
-    }
-    
-    .sidebar-toggle-btn:hover {
-        background: #f57c00;
-    }
-}
+        /* Sidebar Toggle - فقط در موبایل */
+        .sidebar-toggle-btn {
+            display: none;
+        }
 
-/* Responsive - تغییر به 991px */
-@media (max-width: 991px) {
-    .sidebar {
-        width: 320px;
-        position: fixed;
-        right: -320px;
-        height: 100vh;
-        transition: right 0.3s ease;
-        z-index: 10001;
-    }
+        .sidebar-overlay {
+            display: none;
+        }
 
-    .sidebar.show {
-        right: 0;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.3);
-    }
-    
-    /* Overlay برای بستن sidebar */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
-    
-    .sidebar-overlay.show {
-        display: block;
-    }
-}
+        /* Responsive - موبایل */
+        @media (max-width: 991px) {
+            html, body {
+                position: fixed;
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+            }
+
+            .main-container {
+                height: 100%;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+
+            .pdf-toolbar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                z-index: 10000;
+                padding: 8px 10px;
+                gap: 8px;
+                flex-wrap:wrap;
+            }
+
+            .pdf-canvas-container {
+                padding-top: 95px;
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-bottom: 10px;
+                height: 100%;
+            }
+
+            .pdf-viewer {
+                position: relative;
+                height: 100%;
+                overflow-x: auto;
+            }
+
+            .toolbar-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .toolbar-btn i {
+                font-size: 14px;
+            }
+
+            .page-info {
+                font-size: 12px;
+            }
+
+            .page-input {
+                width: 45px;
+                padding: 4px 6px;
+                font-size: 12px;
+            }
+
+            .zoom-select {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .toolbar-group {
+                gap: 5px;
+            }
+
+            .sidebar {
+                width: 320px;
+                position: fixed;
+                right: -320px;
+                height: 100%;
+                top: 0;
+                bottom: 0;
+                transition: right 0.3s ease;
+                z-index: 10001;
+                
+            }
+
+            .sidebar.show {
+                right: 0;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .sidebar-toggle-btn {
+                display: flex;
+                background: #ff9800;
+            }
+
+            .sidebar-toggle-btn:hover {
+                background: #f57c00;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
-         <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-content">
@@ -950,17 +1014,14 @@
                             <p><strong>ناشر:</strong> انتشارات دانشگاهی</p>
                             <p><strong>سال انتشار:</strong> ۱۴۰۳</p>
                             <p><strong>تعداد صفحات:</strong> ۵۷۰</p>
-                            
                         </div>
                     </div>
                 </div>
 
-                   <!-- Table of Contents Tab -->
+                <!-- Table of Contents Tab -->
                 <div class="tab-pane" id="tocTab">
                     <div class="toc-header">فهرست مطالب</div>
                     <ul class="toc-list" id="tocList">
-                      
-                        
                         <li class="toc-item level-1">
                             <div class="toc-item-header" data-page="1">
                                 <span class="toc-item-title">صفحه عنوان</span>
@@ -978,7 +1039,7 @@
                                 <li class="toc-item level-2">
                                     <div class="toc-item-header" data-has-children="true" data-page="26">
                                         <span class="toc-toggle">◄</span>
-                                         <span class="toc-item-title">چارچوب نظری</span>
+                                        <span class="toc-item-title">چارچوب نظری</span>
                                         <span class="toc-item-page">(ص ۲۶)</span>
                                     </div>
                                     <ul class="toc-children">
@@ -988,15 +1049,15 @@
                                                 <span class="toc-item-page">(ص ۲۶)</span>
                                             </div>
                                         </li>
-                                         <li class="toc-item level-3">
-                                           <div class="toc-item-header" data-page="32">
+                                        <li class="toc-item level-3">
+                                            <div class="toc-item-header" data-page="32">
                                                 <span class="toc-item-title">مدل مفهومی</span>
                                                 <span class="toc-item-page">(ص ۳۲)</span>
                                             </div>
                                         </li>
                                     </ul>
                                 </li>
-                                 <li class="toc-item level-2">
+                                <li class="toc-item level-2">
                                     <div class="toc-item-header" data-has-children="true" data-page="40">
                                         <span class="toc-toggle">◄</span>
                                         <span class="toc-item-title">پیشینه پژوهش</span>
@@ -1054,11 +1115,6 @@
                                 <span class="toc-item-page">(ص ۹۰)</span>
                             </div>
                         </li>
-
-                      
-
-                       
-                       
                     </ul>
                 </div>
 
@@ -1066,21 +1122,19 @@
                 <div class="tab-pane" id="bookmarksTab">
                     <h4 style="margin-bottom: 15px; color: #2c3e50;">صفحات نشانه‌گذاری شده</h4>
                     <div class="bookmarks-container" id="bookmarksContainer">
-                        
                         <div class="bookmark-item" onclick="goToPage(15)">
                             <i class="fas fa-bookmark bookmark-icon"></i>
                             <div class="bookmark-info">
                                 <div class="bookmark-page">صفحه ۱۵</div>
                                 <div class="bookmark-note">
                                     <span class='note-name'>
-                                         مقدمه کتاب - نکات مهم در مورد روش‌شناسی
+                                        مقدمه کتاب - نکات مهم در مورد روش‌شناسی
                                     </span>
-                                     <button class="bookmark-delete"  title="حذف نشانه">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                                   </div>
+                                    <button class="bookmark-delete" title="حذف نشانه">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                                 <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۵</div>
-                               
                             </div>
                         </div>
 
@@ -1089,13 +1143,10 @@
                             <div class="bookmark-info">
                                 <div class="bookmark-page">صفحه ۴۲</div>
                                 <div class="bookmark-note">
-                                    <span>
-                                        فصل سوم - تحلیل داده‌های کمی
-                                    </span>
-                                
-                                 <button class="bookmark-delete"  title="حذف نشانه">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                                    <span>فصل سوم - تحلیل داده‌های کمی</span>
+                                    <button class="bookmark-delete" title="حذف نشانه">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                                 <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۶</div>
                             </div>
@@ -1106,14 +1157,13 @@
                             <div class="bookmark-info">
                                 <div class="bookmark-page">صفحه ۷۸</div>
                                 <div class="bookmark-note">
-                                    <button class="bookmark-delete"  title="حذف نشانه">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                                    <button class="bookmark-delete" title="حذف نشانه">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                                 <div class="bookmark-note" style="margin-top: 5px; opacity: 0.7;">۱۴۰۳/۱۰/۰۸</div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -1135,18 +1185,15 @@
                         </form>
 
                         <div class="search-results" id="searchResults">
-                            
-                              <div class="empty-bookmarks" style="padding: 20px;">عبارت مورد نظر را وارد کنید.</div>
-
+                            <div class="empty-bookmarks" style="padding: 20px;">عبارت مورد نظر را وارد کنید.</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Research Notes Tab -->
                 <div class="tab-pane" id="notesTab">
-                    <h4 style="margin-bottom: 15px; color: #2c3e50;">یادداشت ها </h4>
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">یادداشت‌ها</h4>
                     <div class="notes-container" id="notesContainer">
-                        
                         <div class="note-item" onclick="goToPage(23)">
                             <button class="note-item-delete" onclick="event.stopPropagation(); deleteNoteItem(23);" title="حذف یادداشت">
                                 <i class="fas fa-trash"></i>
@@ -1185,7 +1232,6 @@
                                 نکته مهم: تحلیل داده‌ها در این فصل با رویکرد کیفی انجام شده و نتایج قابل توجهی ارائه می‌دهد.
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -1241,9 +1287,8 @@
                 </button>
                 <button class="tab-button" onclick="switchTab('notesTab', this)">
                     <i class="fas fa-pen"></i>
-                    <span>یادداشت ها</span>
+                    <span>یادداشت‌ها</span>
                 </button>
-              
             </div>
         </div>
 
@@ -1251,8 +1296,9 @@
         <div class="pdf-viewer">
             <div class="pdf-toolbar">
                 <button class="toolbar-btn sidebar-toggle-btn" id="sidebarToggle" title="باز/بسته کردن منو">
-        <i class="fas fa-bars"></i>
-    </button>
+                    <i class="fas fa-bars"></i>
+                </button>
+                
                 <div class="toolbar-group">
                     <button class="toolbar-btn" id="prevPage" title="صفحه قبل">
                         <i class="fas fa-chevron-right"></i>
@@ -1280,9 +1326,9 @@
                         <select id="zoomSelect" class="zoom-select">
                             <option value="0.5">50%</option>
                             <option value="0.75">75%</option>
-                            <option value="1"  selected>100%</option>
+                            <option value="1">100%</option>
                             <option value="1.25">125%</option>
-                            <option value="1.5" >150%</option>
+                            <option value="1.5">150%</option>
                             <option value="2">200%</option>
                             <option value="auto">تناسب صفحه</option>
                         </select>
@@ -1293,7 +1339,7 @@
                 </div>
 
                 <div class="toolbar-group">
-                    <button class="toolbar-btn active" id="singlePageBtn" title="تک صفحه ">
+                    <button class="toolbar-btn active" id="singlePageBtn" title="تک صفحه">
                         <i class="fas fa-file-alt"></i>
                     </button>
                     <button class="toolbar-btn" id="doublePageBtn" title="دو صفحه">
@@ -1347,7 +1393,7 @@
     <!-- Page Action Buttons Template -->
     <template id="pageActionsTemplate">
         <div class="page-actions">
-            <button class="page-action-btn bookmark-btn" title="نشانه گذاری" style=" opacity: 0.5;">
+            <button class="page-action-btn bookmark-btn" title="نشانه گذاری" style="opacity: 0.5;">
                 <i class="fas fa-bookmark"></i>
             </button>
             <button class="page-action-btn note-btn" title="افزودن یادداشت">
@@ -1358,13 +1404,32 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+        // Mobile viewport height fix
+        function setAppHeight() {
+            document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+        }
+
+        // Initial call
+        setAppHeight();
+
+        // Re-calculate on resize and orientation change
+        window.addEventListener('resize', setAppHeight);
+        window.addEventListener('orientationchange', setAppHeight);
+
+        // Prevent body scroll on mobile
+        document.body.addEventListener('touchmove', function(e) {
+            if (!e.target.closest('.sidebar-content, .pdf-canvas-container')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
         // PDF.js Configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let pdfDoc = null;
         let currentPage = 1;
         let totalPages = 0;
-        let zoom = 1;
+        let zoom = window.innerWidth <= 991 ? 0.5 : 1;
         let isDoublePageMode = false;
         let bookmarks = [];
         let renderedPages = new Set();
@@ -1372,11 +1437,11 @@
         let pageNotes = {};
         let currentNotePageNumber = null;
         let currentPdfId = 1;
-          const pageTextCache = new Map();
+        const pageTextCache = new Map();
 
         // Utilities
         function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\$&');
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         async function getPageText(pageNum) {
@@ -1479,35 +1544,22 @@
         }
 
         // Sidebar Toggle for Mobile
-document.getElementById('sidebarToggle').addEventListener('click', () => {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    
-    sidebar.classList.toggle('show');
-    overlay.classList.toggle('show');
-});
-
-// بستن sidebar با کلیک روی overlay
-document.getElementById('sidebarOverlay').addEventListener('click', () => {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    
-    sidebar.classList.remove('show');
-    overlay.classList.remove('show');
-});
-
-// بستن sidebar با کلیک روی آیتم‌های منو
-// document.querySelectorAll('.toc-item-header, .bookmark-item, .search-result-item, .note-item').forEach(item => {
-//     item.addEventListener('click', () => {
-//         if (window.innerWidth <= 991) {
-//             const sidebar = document.querySelector('.sidebar');
-//             const overlay = document.getElementById('sidebarOverlay');
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
             
-//             sidebar.classList.remove('show');
-//             overlay.classList.remove('show');
-//         }
-//     });
-// });
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        });
+
+        // بستن sidebar با کلیک روی overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
 
         // Note Modal Functions
         function openNoteModal(pageNumber) {
@@ -1528,15 +1580,10 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             if (noteText) {
                 pageNotes[currentNotePageNumber] = noteText;
                 updateNoteIcon(currentNotePageNumber);
-             
             }
             
             closeNoteModal();
         }
-
-      
-
-      
 
         function updateNoteIcon(pageNumber) {
             const noteBtn = document.querySelector(`.page-action-btn[data-page="${pageNumber}"][data-action="note"]`);
@@ -1556,11 +1603,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                 closeNoteModal();
             }
         });
-
-   
-
-
-  
 
         // Tab Switching
         function switchTab(tabId, button) {
@@ -1615,8 +1657,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                     pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
-            
-    
         }
 
         // Copy Citation
@@ -1647,6 +1687,16 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                 totalPages = pdfDoc.numPages;
                 document.getElementById('totalPages').textContent = totalPages;
                 document.getElementById('pageInput').max = totalPages;
+                
+                // تنظیم زوم پیش‌فرض بر اساس دستگاه
+                if (window.innerWidth <= 991) {
+                    zoom = 0.5;
+                    document.getElementById('zoomSelect').value = '0.5';
+                } else {
+                    zoom = 1;
+                    document.getElementById('zoomSelect').value = '1';
+                }
+                
                 renderPage();
                 
             } catch (error) {
@@ -1723,19 +1773,13 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                 pagesDiv.appendChild(wrapper);
             } else {
                 // Single page mode - render progressively
-                // Render current page first for quick display
                 await renderPageWrapper(currentPage, pagesDiv);
-                
-                // Setup scroll listener
                 setupScrollListener();
-                
-                // Then render all pages from beginning
                 renderAllPagesProgressive(pagesDiv);
             }
         }
 
         async function renderAllPagesProgressive(container) {
-            // Add loading indicator
             const loadingIndicator = document.createElement('div');
             loadingIndicator.style.cssText = 'text-align: center; padding: 30px; color: #999; font-size: 14px;';
             loadingIndicator.innerHTML = `
@@ -1745,7 +1789,7 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             container.appendChild(loadingIndicator);
             
             const batchSize = 3;
-            let renderedCount = 1; // Already rendered current page
+            let renderedCount = 1;
             
             // Render pages before current page
             if (currentPage > 1) {
@@ -1756,7 +1800,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                     for (let pageNum = i; pageNum <= endPage; pageNum++) {
                         if (!pageElements.has(pageNum)) {
                             const wrapper = await createPageWrapper(pageNum);
-                            // Insert before current page
                             const currentWrapper = pageElements.get(currentPage);
                             container.insertBefore(wrapper, currentWrapper);
                             renderedCount++;
@@ -1799,11 +1842,9 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             wrapper.className = 'pdf-page-wrapper';
             wrapper.setAttribute('data-page', pageNum);
             
-            // Clone action buttons from template
             const template = document.getElementById('pageActionsTemplate');
             const actionsDiv = template.content.cloneNode(true);
             
-            // Get the note button and add click handler
             const noteBtn = actionsDiv.querySelector('.note-btn');
             noteBtn.setAttribute('data-page', pageNum);
             noteBtn.onclick = function(e) {
@@ -1811,7 +1852,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                 openNoteModal(pageNum);
             };
             
-            // Check if page has note
             if (pageNotes[pageNum]) {
                 noteBtn.classList.add('has-note');
             }
@@ -1830,12 +1870,17 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
 
         async function renderSinglePage(pageNum, container) {
             const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: zoom });
+            const pixelRatio = window.devicePixelRatio || 1;
+          const viewport = page.getViewport({ scale: zoom * pixelRatio });
+            
+
 
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            canvas.style.width = `${viewport.width / pixelRatio}px`;
+canvas.style.height = `${viewport.height / pixelRatio}px`;
 
             const renderContext = {
                 canvasContext: context,
@@ -1847,7 +1892,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             renderedPages.add(pageNum);
         }
 
-        // Setup scroll listener to update current page
         function setupScrollListener() {
             const container = document.getElementById('pdfContainer');
             let scrollTimeout;
@@ -1885,7 +1929,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             if (closestPage !== currentPage) {
                 currentPage = closestPage;
                 document.getElementById('pageInput').value = currentPage;
-               
             }
         }
 
@@ -1912,8 +1955,6 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
                 e.target.value = currentPage;
             }
         });
-
-     
 
         // Zoom Controls
         document.getElementById('zoomIn').addEventListener('click', () => {
@@ -1971,6 +2012,28 @@ document.getElementById('sidebarOverlay').addEventListener('click', () => {
             }
         });
 
+        // تنظیم مجدد زوم در صورت تغییر اندازه صفحه
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                const previousZoom = zoom;
+                const isMobileNow = window.innerWidth <= 991;
+                
+                // تنظیم زوم بر اساس اندازه صفحه فقط اگر تغییر کرده باشد
+                if (isMobileNow && previousZoom !== 0.5) {
+                    zoom = 0.5;
+                    document.getElementById('zoomSelect').value = '0.5';
+                    renderPage();
+                } else if (!isMobileNow && previousZoom === 0.5) {
+                    zoom = 1;
+                    document.getElementById('zoomSelect').value = '1';
+                    renderPage();
+                }
+                
+                setAppHeight();
+            }, 300);
+        });
 
         // Load PDF
         loadPDF('./pdfs/my-pdf-2.pdf');
