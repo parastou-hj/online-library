@@ -41,11 +41,23 @@
             background: white;
             border-left: 1px solid #ddd;
             display: flex;
-            flex-direction: row-reverse;
+          
             box-shadow: -2px 0 10px rgba(0,0,0,0.1);
             z-index: 100;
             height: 100%;
+            transition: width 0.3s ease; /* اضافه کردن انیمیشن */
+            position: relative;
         }
+        .sidebar.collapsed {
+    width: 80px; /* فقط عرض tab buttons */
+}
+.sidebar.collapsed .close-sidebar{
+    opacity: 0;
+}
+
+.sidebar.collapsed .sidebar-content {
+    display: none; /* پنهان کردن محتوا */
+}
 
         .sidebar-tabs {
             width: 80px;
@@ -67,7 +79,31 @@
             flex-direction: column;
             align-items: center;
             gap: 8px;
-            border-right: 3px solid transparent;
+            border-left: 3px solid transparent;
+        }
+        .close-sidebar{
+            flex-direction: row;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+             background-color: #ff9800;
+             width: 30px;
+             height: 30px;
+             padding: 5px !important;
+             border-radius: 50px;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             border-left: none;
+
+        }
+         .close-sidebar:hover{
+            background-color: #da8301 !important;
+
+         }
+        .close-sidebar i{
+            font-size: 14px !important;
+            color: #fff;
         }
 
         .tab-button:hover {
@@ -94,6 +130,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+             transition: opacity 0.3s ease;
         }
 
         .tab-pane {
@@ -490,6 +527,7 @@
             flex-direction: column;
             position: relative;
             height: 100%;
+            overflow: auto;
         }
 
         .pdf-toolbar {
@@ -500,10 +538,18 @@
             justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             gap: 15px;
-            position: relative;
-            z-index: 100;
+                   position: fixed;
+                top: 0;
+                /* right: 0; */
+              left: 0;
+                width: calc(100% - 400px);
+                z-index: 10000;
+                  transition: left 0.3s ease;
         }
-
+        .sidebar.collapsed ~ .pdf-viewer .pdf-toolbar {
+        width: calc(100% - 80px);
+}
+ 
         .toolbar-group {
             display: flex;
             align-items: center;
@@ -583,10 +629,13 @@
         .pdf-canvas-container {
             flex: 1;
             overflow: auto;
-            display: flex;
+            /* display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: flex-start; */
             padding: 20px;
+            padding-top: 80px;
+            overflow-x: auto; /* اسکرول افقی */
+    overflow-y: auto;
         }
 
         .pdf-pages {
@@ -595,7 +644,8 @@
             gap: 20px;
             align-items: center;
             min-width: min-content;
-            width: fit-content
+            width: fit-content;
+             margin: 0 auto;
         }
 
         .pdf-page-wrapper {
@@ -604,11 +654,15 @@
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             position: relative;
+             flex-shrink: 0; /* جلوگیری از کوچک شدن */
+    width: fit-content; 
         }
 
         .pdf-page-wrapper.double-page {
             display: flex;
             gap: 20px;
+             flex-shrink: 0; /* مهم: جلوگیری از فشرده شدن */
+    width: fit-content;
         }
 
         .pdf-page-wrapper.double-page > div {
@@ -886,6 +940,9 @@
 
         /* Responsive - موبایل */
         @media (max-width: 991px) {
+            .zoom-control{
+                display:none;
+            }
             html, body {
                 position: fixed;
                 overflow: hidden;
@@ -900,16 +957,16 @@
             }
 
             .pdf-toolbar {
-                position: fixed;
-                top: 0;
-                right: 0;
-                left: 0;
-                width: 100%;
-                z-index: 10000;
+        
                 padding: 8px 10px;
                 gap: 8px;
                 flex-wrap:wrap;
+                width: 100%;
+
             }
+            .sidebar.collapsed ~ .pdf-viewer .pdf-toolbar {
+        width: 100%;
+}
 
             .pdf-canvas-container {
                 padding-top: 95px;
@@ -920,9 +977,12 @@
             }
 
             .pdf-viewer {
-                position: relative;
-                height: 100%;
-                overflow-x: auto;
+                 flex: 1;
+    background: #525659;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
             }
 
             .toolbar-btn {
@@ -1002,6 +1062,32 @@
         
         <!-- Sidebar -->
         <div class="sidebar">
+             <button class="tab-button close-sidebar" onclick="toggleSidebar()">
+        <i class="fas fa-close"></i>
+     
+    </button>
+      <div class="sidebar-tabs">
+                <button class="tab-button active" onclick="switchTab('coverTab', this)">
+                    <i class="fas fa-book"></i>
+                    <span>شناسنامه<br>کتاب</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('tocTab', this)">
+                    <i class="fas fa-list"></i>
+                    <span>فهرست</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('bookmarksTab', this)">
+                    <i class="fas fa-bookmark"></i>
+                    <span>نشانه‌ها</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('searchTab', this)">
+                    <i class="fas fa-search"></i>
+                    <span>جستجو در<br>کتاب</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('notesTab', this)">
+                    <i class="fas fa-pen"></i>
+                    <span>یادداشت‌ها</span>
+                </button>
+            </div>
             <div class="sidebar-content">
                 <!-- Book Cover Tab -->
                 <div class="tab-pane active" id="coverTab">
@@ -1268,28 +1354,7 @@
                 </div>
             </div>
 
-            <div class="sidebar-tabs">
-                <button class="tab-button active" onclick="switchTab('coverTab', this)">
-                    <i class="fas fa-book"></i>
-                    <span>شناسنامه<br>کتاب</span>
-                </button>
-                <button class="tab-button" onclick="switchTab('tocTab', this)">
-                    <i class="fas fa-list"></i>
-                    <span>فهرست</span>
-                </button>
-                <button class="tab-button" onclick="switchTab('bookmarksTab', this)">
-                    <i class="fas fa-bookmark"></i>
-                    <span>نشانه‌ها</span>
-                </button>
-                <button class="tab-button" onclick="switchTab('searchTab', this)">
-                    <i class="fas fa-search"></i>
-                    <span>جستجو در<br>کتاب</span>
-                </button>
-                <button class="tab-button" onclick="switchTab('notesTab', this)">
-                    <i class="fas fa-pen"></i>
-                    <span>یادداشت‌ها</span>
-                </button>
-            </div>
+          
         </div>
 
         <!-- PDF Viewer -->
@@ -1323,15 +1388,20 @@
                         <button class="toolbar-btn" id="zoomOut" title="کوچک‌نمایی">
                             <i class="fas fa-minus"></i>
                         </button>
-                        <select id="zoomSelect" class="zoom-select">
-                            <option value="0.5">50%</option>
-                            <option value="0.75">75%</option>
-                            <option value="1">100%</option>
-                            <option value="1.25">125%</option>
-                            <option value="1.5">150%</option>
-                            <option value="2">200%</option>
-                            <option value="auto">تناسب صفحه</option>
-                        </select>
+                      <select id="zoomSelect" class="zoom-select">
+    <option value="0.25">25%</option>
+    <option value="0.5">50%</option>
+    <option value="0.75">75%</option>
+    <option value="1">100%</option>
+    <option value="1.25">125%</option>
+    <option value="1.5">150%</option>
+    <option value="1.75">175%</option>
+    <option value="2">200%</option>
+    <option value="2.25">225%</option>
+    <option value="2.5">250%</option>
+   
+    
+</select>
                         <button class="toolbar-btn" id="zoomIn" title="بزرگ‌نمایی">
                             <i class="fas fa-plus"></i>
                         </button>
@@ -1342,7 +1412,7 @@
                     <button class="toolbar-btn active" id="singlePageBtn" title="تک صفحه">
                         <i class="fas fa-file-alt"></i>
                     </button>
-                    <button class="toolbar-btn" id="doublePageBtn" title="دو صفحه">
+                    <button class="toolbar-btn d-none d-lg-flex" id="doublePageBtn" title="دو صفحه">
                         <i class="fas fa-copy"></i>
                     </button>
                     <button class="toolbar-btn fullscreen-btn" id="fullscreenBtn" title="تمام صفحه">
@@ -1404,19 +1474,19 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Mobile viewport height fix
+       
         function setAppHeight() {
             document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
         }
 
-        // Initial call
+       
         setAppHeight();
 
-        // Re-calculate on resize and orientation change
+      
         window.addEventListener('resize', setAppHeight);
         window.addEventListener('orientationchange', setAppHeight);
 
-        // Prevent body scroll on mobile
+        
         document.body.addEventListener('touchmove', function(e) {
             if (!e.target.closest('.sidebar-content, .pdf-canvas-container')) {
                 e.preventDefault();
@@ -1429,7 +1499,7 @@
         let pdfDoc = null;
         let currentPage = 1;
         let totalPages = 0;
-        let zoom = window.innerWidth <= 991 ? 0.5 : 1;
+        let zoom =  1;
         let isDoublePageMode = false;
         let bookmarks = [];
         let renderedPages = new Set();
@@ -1438,6 +1508,52 @@
         let currentNotePageNumber = null;
         let currentPdfId = 1;
         const pageTextCache = new Map();
+        // تابع محاسبه زوم اولیه متناسب با دستگاه
+function calculateInitialZoom() {
+    const container = document.getElementById('pdfContainer');
+    const containerWidth = container.clientWidth - 40; 
+    const containerHeight = container.clientHeight - 40;
+    
+    if (window.innerWidth <= 991) {
+        
+        return 0.5;
+    } else if (window.innerWidth <= 1400) {
+      
+        return 0.75;
+    } else {
+      
+        return 1.5;
+    }
+}
+
+ 
+async function calculatePageWidthZoom() {
+    if (!pdfDoc) return 1;
+    
+    const page = await pdfDoc.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const container = document.getElementById('pdfContainer');
+    const containerWidth = container.clientWidth - 80;
+    
+    return containerWidth / viewport.width;
+}
+
+// تابع محاسبه زوم برای تناسب کامل صفحه
+async function calculatePageFitZoom() {
+    if (!pdfDoc) return 1;
+    
+    const page = await pdfDoc.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const container = document.getElementById('pdfContainer');
+    const containerWidth = container.clientWidth - 80;
+    const containerHeight = container.clientHeight - 80;
+    
+    const widthScale = containerWidth / viewport.width;
+    const heightScale = containerHeight / viewport.height;
+    
+    return Math.min(widthScale, heightScale);
+}
+
 
         // Utilities
         function escapeRegExp(string) {
@@ -1604,14 +1720,40 @@
             }
         });
 
-        // Tab Switching
-        function switchTab(tabId, button) {
-            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            button.classList.add('active');
-        }
+    function switchTab(tabId, button) {
+    const sidebar = document.querySelector('.sidebar');
+    const clickedTab = document.getElementById(tabId);
+    const isActive = button.classList.contains('active');
+    
+    // اگر tab فعلی دوباره کلیک شد، sidebar را ببند
+    if (isActive) {
+        // بستن sidebar
+        sidebar.classList.add('collapsed');
+        button.classList.remove('active');
+        document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+    } else {
+        // باز کردن sidebar و نمایش tab مورد نظر
+        sidebar.classList.remove('collapsed');
+        
+        // غیرفعال کردن همه tab‌ها و pane‌ها
+        document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        
+        // فعال کردن tab انتخاب شده
+        clickedTab.classList.add('active');
+        button.classList.add('active');
+    }
+}
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+    
+    // اگر sidebar بسته شد، همه tab‌ها را غیرفعال کن
+    if (sidebar.classList.contains('collapsed')) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+    }
+}
 
         // TOC functionality using event delegation on parent
         document.addEventListener('DOMContentLoaded', function() {
@@ -1688,7 +1830,7 @@
                 document.getElementById('totalPages').textContent = totalPages;
                 document.getElementById('pageInput').max = totalPages;
                 
-                // تنظیم زوم پیش‌فرض بر اساس دستگاه
+            
                 if (window.innerWidth <= 991) {
                     zoom = 0.5;
                     document.getElementById('zoomSelect').value = '0.5';
@@ -1696,7 +1838,8 @@
                     zoom = 1;
                     document.getElementById('zoomSelect').value = '1';
                 }
-                
+                    zoom = calculateInitialZoom();
+        document.getElementById('zoomSelect').value = zoom;
                 renderPage();
                 
             } catch (error) {
@@ -1717,6 +1860,7 @@
 
             const container = document.getElementById('pdfContainer');
             container.innerHTML = '';
+             container.style.overflow = 'auto';
             pageElements.clear();
             renderedPages.clear();
 
@@ -1779,6 +1923,7 @@
             }
         }
 
+       
         async function renderAllPagesProgressive(container) {
             const loadingIndicator = document.createElement('div');
             loadingIndicator.style.cssText = 'text-align: center; padding: 30px; color: #999; font-size: 14px;';
@@ -1956,9 +2101,9 @@ canvas.style.height = `${viewport.height / pixelRatio}px`;
             }
         });
 
-        // Zoom Controls
+    
         document.getElementById('zoomIn').addEventListener('click', () => {
-            if (zoom < 3) {
+            if (zoom < 4) {
                 zoom += 0.25;
                 document.getElementById('zoomSelect').value = zoom;
                 renderPage();
@@ -1976,7 +2121,7 @@ canvas.style.height = `${viewport.height / pixelRatio}px`;
         document.getElementById('zoomSelect').addEventListener('change', (e) => {
             const value = e.target.value;
             if (value === 'auto') {
-                zoom = 1.5;
+                zoom = 4;
             } else {
                 zoom = parseFloat(value);
             }
